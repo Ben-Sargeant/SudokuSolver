@@ -1,3 +1,42 @@
+from imutils.perspective import four_point_transform
+import imutils
+import cv2
+import numpy as np
+import pytesseract
+
+def find_board(image):
+  grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+  blurred = cv2.GaussianBlur(grayscale, (7,7), 3)
+  threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+  threshold = cv2.bitwise_not(threshold)
+
+  conts = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+  conts = imutils.grab_contours(conts)
+  conts = sorted(conts, key=cv2.contourArea, reverse=True)
+
+  board_cont = None
+
+  #loop over contors to find the board rather than assumingthe largest is the board
+  for cont in conts:
+    peri = cv2.arcLength(cont, True)
+    approx = cv2.approxPolyDP(cont, 0.02 * peri, True)
+
+    if len(approx) == 4:
+      board_cont = approx
+      break
+
+  board = four_point_transform(image, board_cont.reshape(4,2))
+  # warped = four_point_transform(grayscale, board_cont.reshape(4,2))
+
+  return (board)
+
+
+def extract_cell(cell, show=False):
+
+
+
+
+
 board = [
   [5,3,0,0,7,0,0,0,0],
   [6,0,0,1,9,5,0,0,0],
@@ -74,7 +113,7 @@ def print_board(board):
         print(str(board[i][j]) + " ", end="")
 
 
-print_board(board)
-solve(board)
-print("------------------------------------")
-print_board(board)
+# print_board(board)
+# solve(board)
+# print("------------------------------------")
+# print_board(board)
