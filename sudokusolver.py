@@ -5,6 +5,7 @@ import numpy as np
 import pytesseract
 
 def find_board(image):
+  image = cv2.imread(image)
   grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
   blurred = cv2.GaussianBlur(grayscale, (7,7), 3)
   threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
@@ -26,31 +27,32 @@ def find_board(image):
       break
 
   board = four_point_transform(image, board_cont.reshape(4,2))
-  # warped = four_point_transform(grayscale, board_cont.reshape(4,2))
 
-  return (board)
+  sudoku = cv2.resize(board, (450,450))
+  grid = np.zeros([9,9], dtype=int)
+  for i in range(9):
+      for j in range(9):
+          image = sudoku[i*50:(i+1)*50,j*50:(j+1)*50]
+
+          num = identify_number(image)
+          try:
+            grid[i][j] = int(num)
+          except:
+            pass
+
+  return grid
 
 
-def extract_cell(cell, show=False):
+def identify_number(cell):
 
+  grayscale = cv2.cvtColor(cell, cv2.COLOR_BGR2GRAY)
 
+  img_cropped = grayscale[8:45, 8:45]
+  custom_config = r'--oem 3 --psm 13 -c tessedit_char_whitelist=123456789'
+  return pytesseract.image_to_string(img_cropped, config=custom_config)
 
-
-
-board = [
-  [5,3,0,0,7,0,0,0,0],
-  [6,0,0,1,9,5,0,0,0],
-  [0,9,8,0,0,0,0,6,0],
-  [8,0,0,0,6,0,0,0,3],
-  [4,0,0,8,0,3,0,0,1],
-  [7,0,0,0,2,0,0,0,6],
-  [0,6,0,0,0,0,2,8,0],
-  [0,0,0,4,1,9,0,0,5],
-  [0,0,0,0,8,0,0,7,9]
-]
 
 def solve(board):
-
   find = find_empty(board)
   if not find:
     return True
@@ -88,7 +90,6 @@ def valid(board, num, pos):
 
   return True
 
-
 # function to find an empty space
 def find_empty(board):
   for i in range(len(board)):
@@ -112,8 +113,13 @@ def print_board(board):
       else:
         print(str(board[i][j]) + " ", end="")
 
+file = input("name of img: ")
+print("Identifying digits...")
+board = find_board(file)
+print_board(board)
+print("-----------------------------------------------------------------------")
+print("Finding the solution...")
+solve(board)
+print_board(board)
 
-# print_board(board)
-# solve(board)
-# print("------------------------------------")
-# print_board(board)
+
