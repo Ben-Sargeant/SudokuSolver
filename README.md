@@ -9,4 +9,4 @@ Sudoku solver using backtracking. This initially started out with a hard-coded b
 1. The solution is then printed to the console.
 
 # Notes
-Most puzzles work, however, Tesseract has some difficulty in identifying stand alone digits. I have configured it the best I can and didn't want to spend too much time on it.
+Most puzzles work, however, Tesseract has some difficulty in identifying single digits.
